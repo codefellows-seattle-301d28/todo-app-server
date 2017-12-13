@@ -29,7 +29,15 @@ app.post('/tasks/add', bodyParser, (req, res) => {
   // TODO: insert the new task into the database,
   // pass the results back to the frontend,
   // and catch any errors
+  let {title, description, category, contact, status} = req.body;
 
+  client.query(`
+      INSERT INTO tasks(title, description, category, contact, status)
+      VALUES($1, $2, $3, $4, $5)`,
+      [title, description, category, contact, status]
+  )
+  .then(() => res.sendStatus(201))
+  .catch(console.error)
 });
 
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
