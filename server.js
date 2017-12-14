@@ -8,6 +8,7 @@ const bodyParser = require('body-parser').urlencoded({extended: true});
 const app = express();
 const PORT = process.env.PORT;
 const CLIENT_URL = process.env.CLIENT_URL;
+const TOKEN = process.env.TOKEN;
 
 const client = new pg.Client(process.env.DATABASE_URL);
 client.connect();
@@ -23,21 +24,20 @@ app.get('/tasks', (req, res) => {
     .catch(console.error);
 });
 
+app.get('/admin', (req, res) => res.send(TOKEN === parseInt(req.query.token)))
+
 app.get('*', (req, res) => res.redirect(CLIENT_URL));
 
 app.post('/tasks/add', bodyParser, (req, res) => {
-  // TODO: insert the new task into the database,
-  // pass the results back to the frontend,
-  // and catch any errors
   let {title, description, category, contact, status} = req.body;
 
   client.query(`
       INSERT INTO tasks(title, description, category, contact, status)
-      VALUES($1, $2, $3, $4, $5)`,
+      VALUES ($1, $2, $3, $4, $5)`,
       [title, description, category, contact, status]
-  )
-  .then(() => res.sendStatus(201))
-  .catch(console.error)
+    )
+    .then(results => res.sendStatus(201))
+    .catch(console.error);
 });
 
 app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
